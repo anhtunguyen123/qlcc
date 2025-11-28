@@ -1,0 +1,49 @@
+<div class="pending-container">
+  <div class="divtitle">
+    <h2 class="title"> <i class="fa-solid fa-list-check"></i> Danh sách yêu cầu mượn thiết bị</h2>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Mã mượn</th>
+        <th>Thiết bị</th>
+        <th>Người mượn</th>
+        <th>Thời gian mượn</th>
+        <th>Thời gian trả</th>
+        <th>Trạng thái</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let reservation of listReservation">
+        <td>{{ reservation.reservationId }}</td>
+        <td>{{ reservation.device.deviceName }}</td>
+        <td>{{ reservation.user.fullName }}</td>
+        <td>{{ reservation.startTime | date: 'short' }}</td>
+        <td>{{ reservation.endTime | date: 'short' }}</td>
+        <td>
+          <span class="badge {{ reservation.status.toLowerCase() }}">
+            {{ reservation.status }}
+          </span>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <button class="icon-btn accept" (click)="updateStatus(reservation.reservationId, 'APPROVED')"
+              title="Chấp nhận yêu cầu">
+              <i class="fa-solid fa-check"></i>
+            </button>
+            <button class="icon-btn reject" (click)="updateStatus(reservation.reservationId, 'REJECTED')"
+              title="Từ chối yêu cầu">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div *ngIf="listReservation.length === 0" class="no-results">
+    <p><i class="fa-solid fa-circle-exclamation"></i> Không có yêu cầu mượn thiết bị nào.</p>
+  </div>
+</div>

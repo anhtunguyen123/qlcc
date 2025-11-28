@@ -1,0 +1,130 @@
+<div class="container">
+  <div class="header-section">
+    <h1 class="page-title">
+      <i class="fa-solid fa-list-check"></i> Quản Lý Danh Sách Thiết Bị
+    </h1>
+
+    <p class="page-subtitle">Quản lý các thiết bị </p>
+  </div>
+
+  <div class="filter-section">
+    <div class="filter-group">
+      <label for="statusFilter">Lọc theo trạng thái:</label>
+      <select id="statusFilter" class="filter-select" [(ngModel)]="filter.status" (change)="applyFilter()">
+        <option value="">Tất cả</option>
+        <option value="AVAILABLE">Có Sẵn</option>
+        <option value="BORROWED">Đang Mượn</option>
+        <option value="MAINTENANCE">Đang Bảo Trì</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="categoryFilter">Lọc theo danh mục:</label>
+      <select id="categoryFilter" class="filter-select" [(ngModel)]="filter.categoryId" (change)="applyFilter()">
+        <option value="">-- Chọn loại --</option>
+        <option *ngFor="let c of categories" [ngValue]="c.categoryId">{{c.categoryName}}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="roomFilter">Lọc theo Phòng:</label>
+      <select id="roomFilter" class="filter-select" [(ngModel)]="filter.roomId" (change)="applyFilter()">
+        <option value="">-- Chọn phòng --</option>
+        <option *ngFor="let r of rooms" [ngValue]="r.roomId">{{r.roomName}}</option>
+      </select>
+    </div>
+
+
+    <button class="btn-reset-filters" (click)="resetFilters()">
+      <i class="fas fa-refresh"></i> Đặt lại
+    </button>
+
+    <button class="btn btn-primary" (click)="openCreateForm()">
+      <span class="plus">+</span>
+      <span>Thêm thiết bị</span>
+    </button>
+  </div>
+
+  <table class="table mt-3">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Tên thiết bị</th>
+        <th>Danh mục</th>
+        <th>Phòng</th>
+        <th>Trạng thái</th>
+        <th>Xách tay</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let d of devices">
+        <td>{{ d.deviceId }}</td>
+        <td>{{ d.deviceName }}</td>
+        <td>{{ d.category.categoryName}}</td>
+        <td>{{ d.classroom.roomName }}</td>
+        <td>{{ d.status }}</td>
+        <td>{{ d.isPortable ? "Có" : "Không" }}</td>
+
+        <td>
+          <div class="action-buttons">
+            <button class="btn-action btn-edit" (click)="openEditForm(d)" title="Sửa thiết bị">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-action btn-delete" (click)="deleteDevice(d.deviceId)" title="Xóa thiết bị">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="form-popup" *ngIf="showForm">
+    <form [formGroup]="deviceForm" (ngSubmit)="submitForm()">
+
+      <h3>{{ isEdit ? 'Sửa thiết bị' : 'Thêm thiết bị' }}</h3>
+
+      <label>ID thiết bị</label>
+      <input formControlName="deviceId" [readonly]="isEdit" />
+
+      <label>Tên thiết bị</label>
+      <input formControlName="deviceName" />
+
+      <label>Danh mục</label>
+      <select formControlName="categoryId" class="filter-select">
+        <option [ngValue]="null">-- Chọn loại --</option>
+        <option *ngFor="let category of categories" [ngValue]="category.categoryId">
+          {{ category.categoryName }}
+        </option>
+      </select>
+
+      <label>Phòng</label>
+      <select formControlName="roomId" class="filter-select">
+        <option [ngValue]="null">-- Chọn phòng --</option>
+        <option *ngFor="let room of rooms" [ngValue]="room.roomId">
+          {{ room.roomName }}
+        </option>
+      </select>
+
+      <label>Mô tả</label>
+      <textarea formControlName="description"></textarea>
+
+      <label>Thiết bị xách tay</label>
+      <input type="checkbox" formControlName="isPortable" />
+
+      <label>Trạng thái</label>
+      <select formControlName="status">
+        <option value="AVAILABLE">Có Sẵn</option>
+        <option value="BORROWED">Đang Mượn</option>
+        <option value="MAINTENANCE">Đang Bảo Trì</option>
+      </select>
+
+      <button type="submit" class="btn btn-success">Lưu</button>
+      <button type="button" class="btn btn-secondary" (click)="showForm=false">Hủy</button>
+
+    </form>
+  </div>
+
+</div>

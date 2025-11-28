@@ -1,0 +1,68 @@
+<div id="dashboard" class="section active">
+    <div class="dashboard-cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Tổng thiết bị</div>
+          <div class="card-icon"><i class="fa-solid fa-laptop"></i></div>
+        </div>
+        <div class="card-value">{{countdevice}}</div>
+      </div>
+  
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Đang mượn</div>
+          <div class="card-icon"><i class="fa-solid fa-calendar-check"></i></div>
+        </div>
+        <div class="card-value">{{countborrow}}</div>
+      </div>
+  
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Cần bảo trì</div>
+          <div class="card-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+        </div>
+        <div class="card-value">{{countMaintenance}}</div>
+      </div>
+  
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Quá hạn</div>
+          <div class="card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        </div>
+        <div class="card-value">{{countborrowoverdue}}</div>
+      </div>
+    </div>
+    <div class="table-container">
+      <div class="table-header">
+        <h2>Thiết bị sắp đến hạn trả</h2>
+        <button class="btn btn-primary">Xem tất cả</button>
+      </div>
+
+      <div *ngIf="ListBorrowAlmostDue.length === 0" class="no-data">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        Không có thiết bị đến hạn
+      </div>
+
+      <table *ngIf="ListBorrowAlmostDue.length > 0">
+        <thead>
+          <tr>
+            <th>Thiết bị</th>
+            <th>Người mượn</th>
+            <th>Ngày mượn</th>
+            <th>Hạn trả</th>
+            <th>Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let borrow of ListBorrowAlmostDue">
+            <td>{{ borrow.device.deviceName }}</td>
+            <td>{{ borrow.user.fullName }}</td>
+            <td>{{ borrow.actualEndTime | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ borrow.returnDue | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ borrow.status }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  

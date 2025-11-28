@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Flowchart Đăng nhập/Đăng ký</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Flowchart Đăng nhập/Đăng ký</h1>
+    <div class="mermaid">
+graph TD
+    Start((Start)) --> LoginOrReg{Chọn hành động}
+    
+    %% ĐĂNG KÝ
+    LoginOrReg -->|Đăng ký| ShowRegForm[Hiển thị form đăng ký]
+    ShowRegForm --> InputRegInfo[Nhập thông tin:<br/>Email, Mật khẩu,<br/>Xác nhận mật khẩu]
+    InputRegInfo --> SubmitReg[Gửi thông tin]
+    SubmitReg --> ValidateReg{Validate dữ liệu}
+    
+    ValidateReg -->|Invalid| ShowRegError[Hiển thị lỗi]
+    ShowRegError --> InputRegInfo
+    
+    ValidateReg -->|Valid| CheckEmail{Kiểm tra email tồn tại?}
+    CheckEmail -->|Email đã tồn tại| ShowEmailError[Hiển thị lỗi email trùng]
+    ShowEmailError --> InputRegInfo
+    
+    CheckEmail -->|Email chưa tồn tại| HashPassword[Băm mật khẩu]
+    HashPassword --> SaveUser[Lưu user vào database]
+    SaveUser --> ShowRegSuccess[Hiển thị thông báo thành công]
+    ShowRegSuccess --> RedirectToLogin[Chuyển hướng đến trang đăng nhập]
+    RedirectToLogin --> LoginOrReg
+    
+    %% ĐĂNG NHẬP
+    LoginOrReg -->|Đăng nhập| ShowLoginForm[Hiển thị form đăng nhập]
+    ShowLoginForm --> InputLoginInfo[Nhập thông tin:<br/>Email, Mật khẩu]
+    InputLoginInfo --> SubmitLogin[Gửi thông tin]
+    SubmitLogin --> FindUser[Tìm user theo email]
+    
+    FindUser --> UserExists{User tồn tại?}
+    UserExists -->|Không tồn tại| ShowLoginError[Hiển thị lỗi đăng nhập]
+    UserExists -->|Tồn tại| VerifyPassword{So sánh mật khẩu}
+    
+    VerifyPassword -->|Không khớp| ShowLoginError
+    VerifyPassword -->|Khớp| GenerateToken[Tạo token/phiên đăng nhập]
+    GenerateToken --> SaveSession[Lưu session/token]
+    SaveSession --> RedirectHome[Chuyển hướng đến trang chủ]
+    
+    ShowLoginError --> InputLoginInfo
+    
+    RedirectHome --> End((End))
+    
+    %% Styling
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:1px
+    classDef decision fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef process fill:#e8f5e8,stroke:#2e7d32,stroke-width:1px
+    classDef startEnd fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class ValidateReg,CheckEmail,UserExists,VerifyPassword,LoginOrReg decision
+    class ShowRegForm,InputRegInfo,SubmitReg,HashPassword,SaveUser,ShowRegSuccess,RedirectToLogin,
+          ShowLoginForm,InputLoginInfo,SubmitLogin,FindUser,GenerateToken,SaveSession,RedirectHome process
+    class Start,End startEnd
+    </div>
+</body>
+</html>

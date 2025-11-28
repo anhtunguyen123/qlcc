@@ -1,0 +1,112 @@
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-box-open"></i> TRẢ THIẾT BỊ</h1>
+    </div>
+    <div class="main-content">
+        <div class="card">
+            <h2>Tìm kiếm Phiếu Mượn</h2>
+
+            <div class="admin-notice" id="adminNotice" style="display: none;">
+                🔧 <strong>Quản trị viên:</strong> Bạn có thể trả thiết bị cho mọi người
+            </div>
+
+            <div class="form-group">
+                <label for="borrowId" class="required">Mã phiếu mượn (Borrow ID)</label>
+                <input type="number" id="borrowId" placeholder="Nhập mã phiếu mượn...">
+            </div>
+
+            <div class="teacher-warning" id="teacherWarning" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i> <strong>Giáo viên:</strong> Bạn chỉ có thể trả thiết bị do
+                chính mình mượn
+            </div>
+
+            <div id="teacherSection" *ngIf="role == 'TEACHER'">
+                <button type="button" class="search-btn" (click)="searchMyBorrows()">
+                    <i class="fas fa-list"></i> Xem thiết bị tôi đang mượn
+                </button>
+            </div>
+
+            <button type="button" class="search-btn" onclick="searchBorrow()">
+                🔍 Tìm kiếm Phiếu Mượn
+            </button>
+
+            <div id="myBorrowsList" *ngIf="searched">
+                <div *ngIf="listBorrow.length > 0; else nolistBorrow">
+                    <h3>Thiết bị bạn đang mượn:</h3>
+                    <div id="borrowsListContent">
+                        <div *ngFor="let borrow of listBorrow" class="borrow-item" (click)="selectBorrow(borrow)"
+                            [class.active]="selectedBorrow?.borrowId === borrow.borrowId">
+                            <div class="borrow-card">
+                                <p><strong>Mã phiếu mượn:</strong> {{borrow.borrowId}}</p>
+                                <p><strong>Tên thiết bị:</strong> {{borrow.device.deviceName}}</p>
+                                <p><strong>Ngày mượn:</strong> {{borrow.actualStartTime | date:'dd/MM/yyyy HH:mm'}}</p>
+                                <p><strong>Hạn trả:</strong> {{borrow.actualEndTime | date:'dd/MM/yyyy HH:mm'}}</p>
+                                <p *ngIf="borrow.notes"><strong>Ghi chú:</strong> {{borrow.notes}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ng-template #nolistBorrow>
+                <div class="no-borrows-message">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <p>Bạn không có thiết bị nào đang mượn.</p>
+                </div>
+            </ng-template>
+        </div>
+
+        <div class="card">
+            <h2>Thông tin Trả thiết bị</h2>
+
+            <form id="returnForm" #form="ngForm" (ngSubmit)="returnDevice()">
+                <div class="form-group">
+                    <label for="returnDate" class="required">Ngày trả thực tế</label>
+                    <input type="datetime-local" id="returnDate" required [(ngModel)]="returnForm.returnDate" name="returnDate">
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Tình trạng thiết bị khi trả</label>
+                    <div class="status-options">
+                        <label class="status-option">
+                            <input type="radio" name="condition" value="GOOD" required
+                                [(ngModel)]="returnForm.condition">
+                            <span><i class="fas fa-check-circle" style="color: #2ecc71;"></i> Tốt</span>
+                        </label>
+                        <label class="status-option">
+                            <input type="radio" name="condition" value="MINOR_DAMAGE"
+                                [(ngModel)]="returnForm.condition">
+                            <span><i class="fas fa-exclamation-triangle" style="color: #f39c12;"></i> Hư hỏng nhẹ</span>
+                        </label>
+                        <label class="status-option">
+                            <input type="radio" name="condition" value="MAJOR_DAMAGE"
+                                [(ngModel)]="returnForm.condition">
+                            <span><i class="fas fa-times-circle" style="color: #e74c3c;"></i> Hư hỏng nặng</span>
+                        </label>
+                        <label class="status-option">
+                            <input type="radio" name="condition" value="MISSING_ACCESSORIES"
+                                [(ngModel)]="returnForm.condition">
+                            <span><i class="fas fa-box-open" style="color: #3498db;"></i> Mất phụ kiện</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Ghi chú tình trạng</label>
+                    <textarea id="notes" placeholder="Mô tả chi tiết tình trạng thiết bị, hư hỏng cụ thể..."
+                        [(ngModel)]="returnForm.notes" name="notes"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="receivedBy" class="required">Người tiếp nhận</label>
+                    <input type="text" id="receivedBy" placeholder="Họ tên người tiếp nhận thiết bị..." required
+                        [(ngModel)]="returnForm.receivedBy" name="receivedBy">
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-cancel" (click)="resetForm()">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-submit" [disabled]="!selectedBorrow">Xác nhận Trả thiết
+                        bị</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

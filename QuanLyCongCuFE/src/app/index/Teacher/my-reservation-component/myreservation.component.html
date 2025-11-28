@@ -1,0 +1,200 @@
+<div class="reservation-container">
+  <div class="header-section">
+    <h1 class="page-title">
+      <i class="fa-solid fa-list-check"></i> Danh Sách Mượn Thiết Bị
+    </h1>
+    <p class="page-subtitle">Quản lý các yêu cầu mượn thiết bị của bạn</p>
+  </div>
+
+  <div class="filter-section">
+    <div class="filter-group">
+      <label for="statusFilter">Lọc theo trạng thái:</label>
+      <select id="statusFilter" class="filter-select" [(ngModel)]="filter.status" (change)="applyFilter()">
+        <option value="">Tất cả</option>
+        <option value="PENDING">Đang chờ duyệt</option>
+        <option value="APPROVED">Đã duyệt</option>
+        <option value="REJECTED">Đã từ chối</option>
+        <option value="COMPLETED">Đã trả thiết bị</option>
+        <option value="INPROGRESS">Đang mượn</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="dateFilter">Lọc theo ngày:</label>
+      <input type="date" id="dateFilter" class="filter-input" [(ngModel)]="filter.startDate" (change)="applyFilter()">
+    </div>
+
+    <button class="btn-reset-filters" (click)="resetFilters()">
+      <i class="fas fa-refresh"></i> Đặt lại
+    </button>
+  </div>
+
+  <div class="table-wrapper" *ngIf="reservations.length > 0">
+    <div class="table-responsive">
+      <table class="reservation-table">
+        <thead>
+          <tr>
+            <th class="text-center">STT</th>
+            <th>Thiết bị</th>
+            <th class="text-center">Thời gian mượn</th>
+            <th class="text-center">Thời gian trả</th>
+            <th>Mục đích</th>
+            <th class="text-center">Trạng thái</th>
+            <th class="text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of reservations; let i = index" [class]="r.status">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="device-cell">
+              <div class="device-info">
+                <div class="device-name">{{ r.device.deviceName }}</div>
+                <div class="device-id">Mã: {{ r.device.deviceId }}</div>
+              </div>
+            </td>
+            <td class="text-center">
+              {{ r.startTime | date:'dd/MM/yyyy HH:mm' }}
+            </td>
+            <td class="text-center">
+              {{ r.endTime | date:'dd/MM/yyyy HH:mm' }}
+            </td>
+            <td class="purpose-cell">
+              <span class="purpose-text" [title]="r.purpose">{{ r.purpose }}</span>
+            </td>
+            <td class="text-center">
+              <span class="status-badge status-{{ r.status?.toLowerCase() }}">
+                <i *ngIf="r.status === 'APPROVED'" class="fa-solid fa-circle-check" style="color: #10b981"></i>
+                <i *ngIf="r.status === 'REJECTED'" class="fa-solid fa-circle-xmark" style="color: #ef4444"></i>
+                <i *ngIf="r.status === 'COMPLETED'" class="fa-solid fa-rotate-left" style="color: #6b7280"></i>
+                <i *ngIf="r.status === 'PENDING'" class="fa-solid fa-hourglass-half" style="color: #f59e0b"></i>
+                <i *ngIf="r.status === 'INPROGRESS'" class="fa-solid fa-play-circle" style="color: #3b82f6"></i>
+                {{ r.status }}
+              </span>
+            </td>
+            <td class="text-center action-cell">
+              <div class="action-buttons">
+                <button *ngIf="r.status === 'PENDING'" class="btn-action btn-edit" title="Chỉnh sửa"  (click)="openEditModal(r)">
+                  <i class="fas fa-pen-to-square"></i>
+                </button>
+                <button *ngIf="r.status === 'INPROGRESS'" class="btn-action btn-extend" title="Gia hạn" (click)="openExtendModal(r)">
+                  <i class="fas fa-clock"></i>
+                </button>
+                <button *ngIf="r.status === 'PENDING'" class="btn-action btn-cancel" title="Hủy"
+                  (click)="cancelReservation(r.reservationId)">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+                <button *ngIf="r.status === 'APPROVED'" class="btn-action btn-details" title="Xem chi tiết">
+                  <!-- (click)="viewDetails(r)" -->
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="reservations.length === 0">
+    <div class="empty-icon">
+      <i class="fa-solid fa-inbox"></i>
+    </div>
+    <h3>Không có dữ liệu</h3>
+    <p>Hiện tại không có đơn đặt mượn thiết bị nào phù hợp với bộ lọc.</p>
+    <button class="btn-new-reservation" (click)="createNewReservation()">
+      <i class="fas fa-plus"></i> Tạo đơn mượn mới
+    </button>
+  </div>
+
+  <!-- form gia hạn thiết bị -->
+  <div class="modal-overlay" *ngIf="ShowExtendForm" (click)="closeExtendForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Gia hạn thời gian mượn</h3>
+        <button class="btn-close" (click)="closeExtendForm()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="device-info-modal">
+          <h4>{{ selectedReservation?.device?.deviceName }}</h4>
+          <p>Mã thiết bị: {{ selectedReservation?.device?.deviceId }}</p>
+        </div>
+        <div class="time-info">
+          <div class="time-group">
+            <label>Thời gian trả hiện tại:</label>
+            <p class="current-time">{{ selectedReservation?.endTime | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          <div class="form-group">
+            <label for="newEndTime">Thời gian trả mới *</label>
+            <input type="datetime-local" id="newEndTime" class="form-control" [(ngModel)]="newEndTime">
+            <small class="hint">Thời gian gia hạn phải sau thời gian trả hiện tại</small>
+          </div>
+          <div class="form-group">
+            <label for="extensionReason">Lý do gia hạn *</label>
+            <textarea id="extensionReason" class="form-control" rows="3" [(ngModel)]="extensionReason"
+              placeholder="Nhập lý do gia hạn..." maxlength="500"></textarea>
+            <small class="hint">Tối đa 500 ký tự</small>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeExtendForm()">Hủy</button>
+        <button class="btn btn-primary" (click)="submitExtension()" [disabled]="!newEndTime || !extensionReason">
+          <i class="fas fa-check"></i> Xác nhận gia hạn
+        </button>
+      </div>
+    </div>
+  </div>
+
+   <!-- Form cập nhật reservation -->
+   <div class="modal-overlay" *ngIf="showEditForm" (click)="closeEditForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Chỉnh sửa yêu cầu mượn thiết bị</h3>
+        <button class="btn-close" (click)="closeEditForm()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="device-info-modal">
+          <h4>{{ selectedReservation?.device?.deviceName }}</h4>
+          <p>Mã thiết bị: {{ selectedReservation?.device?.deviceId }}</p>
+        </div>
+        
+        <form class="edit-form" #editForm="ngForm">
+          <div class="form-group">
+            <label for="editStartTime">Thời gian bắt đầu *</label>
+            <input type="datetime-local" id="editStartTime" class="form-control" 
+                   [(ngModel)]="editStartTime" name="editStartTime" required>
+          </div>
+
+          <div class="form-group">
+            <label for="editEndTime">Thời gian kết thúc *</label>
+            <input type="datetime-local" id="editEndTime" class="form-control" 
+                   [(ngModel)]="editEndTime" name="editEndTime" 
+                   [min]="editStartTime || minEditDate" required>
+            <small class="hint">Thời gian kết thúc phải sau thời gian bắt đầu</small>
+          </div>
+
+          <div class="form-group">
+            <label for="editPurpose">Mục đích sử dụng *</label>
+            <textarea id="editPurpose" class="form-control" rows="3" 
+                      [(ngModel)]="editPurpose" name="editPurpose" 
+                      placeholder="Nhập mục đích sử dụng thiết bị..." 
+                      maxlength="500" required></textarea>
+            <small class="hint">Tối đa 500 ký tự</small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeEditForm()">Hủy</button>
+        <button class="btn btn-primary" (click)="submitEdit()" 
+                [disabled]="!editForm.valid || !isEditFormValid()">
+          <i class="fas fa-check"></i> Cập nhật
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

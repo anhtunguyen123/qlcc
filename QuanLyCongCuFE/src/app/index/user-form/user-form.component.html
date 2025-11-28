@@ -1,0 +1,148 @@
+    <div class="body">
+    <div class="background-3d">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+      </div>
+      <div id="auth-container" class="auth-container">
+        <div class="auth-left">
+          <div class="content-wrapper">
+            <h1>Hệ thống Quản lý Thiết bị Phòng học</h1>
+            <p>
+              Nền tảng quản lý thiết bị thông minh giúp nhà trường dễ dàng theo dõi,
+              mượn - trả, bảo trì và phân quyền người dùng.  
+              Giải pháp toàn diện để tối ưu hóa hiệu quả sử dụng thiết bị,
+              tiết kiệm thời gian quản lý và nâng cao chất lượng giảng dạy.
+            </p>
+      
+            <div class="feature-cards">
+              <div class="feature-card">
+                <div class="icon">📱</div>
+                <h3>Quản lý thông minh</h3>
+              </div>
+              <div class="feature-card">
+                <div class="icon">🔒</div>
+                <h3>Bảo mật cao</h3>
+              </div>
+              <div class="feature-card">
+                <div class="icon">⚡</div>
+                <h3>Hiệu quả tối ưu</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="auth-right">
+          <div id="login-form" class="auth-form active" [ngClass]="{active: Showlogin}">
+            <form #formlogin="ngForm" (ngSubmit)="login()" novalidate>
+                <div class="form-header">
+                    <h2>Đăng nhập</h2>
+                    <p>Chào mừng bạn trở lại</p>
+                  </div>
+            
+                  <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <div class="input-wrapper">
+                      <input type="email" id="login-email" autocomplete="username" name="Email" [(ngModel)]="Email" placeholder="Nhập email của bạn" required email #emailCtrlogin="ngModel">
+                    </div>
+                        <small class="error" *ngIf="emailCtrlogin.errors?.['required'] && emailCtrlogin.touched">
+                            Email không được để trống
+                        </small>
+                        <small class="error" *ngIf="emailCtrlogin.errors?.['email'] && emailCtrlogin.touched">
+                            Email không hợp lệ
+                        </small>
+                  </div>
+            
+                  <div class="form-group">
+                    <label for="login-password">Mật khẩu</label>
+                    <div class="input-wrapper">
+                      <input type="password" id="login-password" autocomplete="current-password" name="PassWord" [(ngModel)]="PassWord" placeholder="Nhập mật khẩu" required #passCtrlogin="ngModel">
+                    </div>
+                    <small class="error" *ngIf="passCtrlogin.errors?.['required'] && passCtrlogin.touched">
+                        Mật khẩu không được để trống
+                      </small>
+                  </div>
+            
+                  <button class="btn btn-primary" id="login-btn"  type="submit" [disabled]="formlogin.invalid || isloading">
+                    <div *ngIf="isloading" class="spinner"></div>
+                    <span> Đăng nhập</span>
+                  </button>
+                  <div class="auth-switch">
+                    Chưa có tài khoản? <a (click)="showFormRegister()">Đăng ký ngay</a>
+                  </div>
+            </form>
+          </div>
+          <!-- form đăng ký -->
+          <div id="register-form" class="auth-form" [ngClass]="{active: !Showlogin}">
+            <form #formregister="ngForm" (ngSubmit)="register()" novalidate>
+              <div class="form-header">
+                <h2>Đăng ký tài khoản</h2>
+                <p>Tạo tài khoản mới của bạn</p>
+              </div>
+      
+              <div class="form-group">
+                <label for="register-name">Họ và tên</label>
+                <div class="input-wrapper">
+                  <input type="text" id="register-name" name="FullName" [(ngModel)]="FullName"
+                    placeholder="Nhập họ và tên" required minlength="5" #nameCtrl="ngModel" />
+                </div>
+                <small class="error" *ngIf="nameCtrl.errors?.['required'] && nameCtrl.touched">
+                  Họ và tên không được để trống
+                </small>
+                <small class="error" *ngIf="nameCtrl.errors?.['minlength'] && nameCtrl.touched">
+                  Họ và tên ít nhất 5 kí tự
+                </small>
+              </div>
+      
+              <div class="form-group">
+                <label for="register-email">Email</label>
+                <div class="input-wrapper">
+                  <input type="email" id="register-email" autocomplete="email" name="RegEmail" [(ngModel)]="Email" placeholder="Nhập email" required email #emailCtrl="ngModel" />
+                </div>
+                <small class="error" *ngIf="emailCtrl.errors?.['required'] && emailCtrl.touched">
+                  Email không được để trống
+                </small>
+                <small class="error" *ngIf="emailCtrl.errors?.['email'] && emailCtrl.touched">
+                  Email không hợp lệ
+                </small>
+                <small class="error" *ngIf="emailExists">
+                  Email đã tồn tại
+                </small>
+              </div>
+      
+              <div class="form-group">
+                <label for="register-password">Mật khẩu</label>
+                <div class="input-wrapper">
+                  <input type="password" id="register-password" autocomplete="new-password" name="RegPassWord" [(ngModel)]="PassWord"
+                    placeholder="Nhập mật khẩu" required minlength="6" #passCtrl="ngModel" />
+                </div>
+                <small class="error" *ngIf="passCtrl.errors?.['required'] && passCtrl.touched">
+                  Mật khẩu không được để trống
+                </small>
+                <small class="error" *ngIf="passCtrl.errors?.['minlength'] && passCtrl.touched">
+                  Mật khẩu phải có ít nhất 6 ký tự
+                </small>
+              </div>
+    
+              <div class="form-group">
+                <label for="register-confirm-password">Xác nhận mật khẩu</label>
+                <div class="input-wrapper">
+                  <input type="password" id="register-confirm-password" autocomplete="new-password" [(ngModel)]="ConfirmPass"
+                    name="ConfirmPass" placeholder="Nhập lại mật khẩu" required #confirmCtrl="ngModel" />
+                </div>
+                <small class="error" *ngIf="confirmCtrl.touched && PassWord !== ConfirmPass">
+                  Mật khẩu xác nhận không khớp
+                </small>
+              </div>
+      
+              <button class="btn btn-primary" id="register-btn" type="submit" [disabled]="formregister.invalid">
+                <span >Đăng ký</span>
+                <div *ngIf="isloading" class="spinner"></div>
+              </button>
+              <div class="auth-switch">
+                Đã có tài khoản? <a (click)="showFormLogin()">Đăng nhập ngay</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>

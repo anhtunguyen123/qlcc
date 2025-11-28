@@ -1,0 +1,198 @@
+<div class="device-search-container">
+  <form [formGroup]="searchForm" class="search-section">
+
+    <div class="filters-container">
+      <div class="filter-group">
+        <label class="filter-label">
+          <i class="fa-solid fa-calendar-days icon"></i>
+          Thời gian mượn
+        </label>
+        <input type="datetime-local" formControlName="startTime" class="filter-input" />
+        <small class="error"
+          *ngIf="searchForm.get('startTime')?.touched && searchForm.get('startTime')?.hasError('required')">
+          Vui lòng chọn thời gian mượn !
+        </small>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">
+          <i class="fa-solid fa-clock icon"></i>
+          Số tiết
+        </label>
+        <select formControlName="lessonCount" class="filter-select">
+          <option value="1">1 tiết</option>
+          <option value="2">2 tiết</option>
+          <option value="3">3 tiết</option>
+          <option value="5">Cả buổi</option>
+          <option value="10">Cả ngày</option>
+        </select>
+        <small class="error"
+          *ngIf="searchForm.get('lessonCount')?.touched && searchForm.get('lessonCount')?.hasError('required')">
+          Vui lòng chọn số tiết!
+        </small>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">
+          <i class="fa-solid fa-door-open icon"></i>
+          Phòng
+        </label>
+        <div class="nested-dropdown">
+          <button class="dropdown-btn" type="button" (click)="toggleDropdown()" [ngClass]="{ 'active': dropdownOpen }">
+            {{ selectedRoomName || '-- Chọn phòng --' }}
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="dropdown-menu" [ngClass]="{ 'show': dropdownOpen }">
+            <div *ngFor="let group of groupedRooms" class="dropdown-group" [ngClass]="{ 'expanded': expandedBuilding === group.building }">
+              <div class="dropdown-header" [ngClass]="{ 'expanded': expandedBuilding === group.building }" (click)="toggleBuilding(group.building, $event)">
+                {{ group.building }}
+              </div>
+              <div class="dropdown-submenu">
+                <button class="dropdown-item" *ngFor="let room of group.rooms" (click)="selectRoom(room)">
+                  {{ room.roomName }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">
+          <i class="fa-solid fa-bullseye icon"></i>
+          Loại thiết bị
+        </label>
+        <select formControlName="categoryId" class="filter-select">
+          <option value="">-- Chọn loại --</option>
+          <option *ngFor="let category of categories" [value]="category.categoryId">
+            {{ category.categoryName }}
+          </option>
+        </select>
+
+        <small class="error"
+          *ngIf="searchForm.get('categoryId')?.touched && searchForm.get('categoryId')?.hasError('required')">
+          Vui lòng chọn loại thiết bị!
+        </small>
+      </div>
+    </div>
+
+    <button (click)="searchDevices()" type="button" class="search-button">
+      <i class="fa-solid fa-magnifying-glass"></i> Tìm thiết bị
+    </button>
+  </form>
+
+  <div class="results-section" *ngIf="results.length > 0">
+    <div class="results-header">
+      <h2><i class="fa-solid fa-list"></i> Kết quả</h2>
+    </div>
+
+    <div class="devices-grid">
+      <div *ngFor="let device of results" class="device-card" [ngClass]="{
+        'available': device.status === 'AVAILABLE_NOW',
+        'available-soon': device.status === 'AVAILABLE_LATER'
+        }">
+        <div class="device-header">
+          <h3 class="device-name"><i class="fa-solid fa-laptop icon"></i> {{ device.name }}</h3>
+          <span class="device-status available" *ngIf="device.status === 'AVAILABLE_NOW'">
+            <i class="fa-solid fa-check-circle"></i> Có thể mượn
+          </span>
+          <span class="device-status available-later" *ngIf="device.status === 'AVAILABLE_LATER'">
+            <i class="fa-solid fa-clock"></i> Trống lúc: {{ device.availableAfter | date: 'HH:mm dd/MM' }}
+          </span>
+        </div>
+
+        <div class="device-info">
+          <p class="info-item"><strong><i class="fa-solid fa-barcode"></i> Mã:</strong> {{ device.deviceId }}</p>
+          <p class="info-item"><strong><i class="fa-solid fa-location-dot"></i> Vị trí:</strong> {{ device.location }}
+          </p>
+          <p class="info-item"><strong><i class="fa-solid fa-layer-group"></i> Loại:</strong> {{ device.category }}</p>
+        </div>
+
+        <div class="device-actions">
+          <button class="btn btn-primary" *ngIf="device.status === 'AVAILABLE_NOW'" (click)="OpenFormBorrow(device)">
+            <i class="fa-solid fa-hand-holding"></i> Đặt mượn
+          </button>
+          <button class="btn btn-primary" *ngIf="device.status === 'AVAILABLE_LATER'"
+            (click)="OpenFormReservation(device)">
+            <i class="fa-solid fa-clock-rotate-left"></i> Đặt trước
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="results.length === 0" class="no-results">
+    <p><i class="fa-solid fa-circle-exclamation"></i> Không tìm thấy thiết bị phù hợp.</p>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showReservationForm">
+  <div class="modal">
+    <h3><i class="fa-solid fa-calendar-plus"></i> Đặt trước thiết bị</h3>
+    <p><strong>Thiết bị:</strong> {{ selectDevice?.name }}</p>
+    <p><strong>Mã:</strong> {{ selectDevice?.deviceId }}</p>
+
+    <div class="form-field">
+      <label><i class="fa-solid fa-clock icon"></i> Thời gian bắt đầu</label>
+      <input type="datetime-local" [(ngModel)]="startTime" required />
+    </div>
+
+    <div class="form-field">
+      <label><i class="fa-solid fa-hourglass-half"></i> Số tiết</label>
+      <select [(ngModel)]="endtime" class="filter-select">
+        <option value="1">1 tiết</option>
+        <option value="2">2 tiết</option>
+        <option value="3">3 tiết</option>
+        <option value="5">Cả buổi</option>
+        <option value="10">Cả ngày</option>
+      </select>
+    </div>
+
+    <div class="form-field">
+      <label><i class="fa-solid fa-clipboard icon"></i> Mục đích mượn</label>
+      <textarea rows="3" [(ngModel)]="purpose" placeholder="Nhập mục đích..."></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-success" (click)="reservationDevice()">
+        Xác nhận
+      </button>
+      <button class="btn-secondary" (click)="closeReservationForm()">
+        Hủy
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showBorrowForm">
+  <div class="modal">
+    <h3><i class="fa-solid fa-hand-holding"></i> Đặt mượn thiết bị</h3>
+
+    <p><strong>Mã thiết bị:</strong> {{ selectedDeviceBorrow?.deviceId }}</p>
+    <p><strong>Thiết bị:</strong> {{ selectedDeviceBorrow?.name }}</p>
+
+    <div class="form-field">
+      <label><i class="fa-solid fa-clock"></i> Thời gian bắt đầu</label>
+      <p>{{ startTimebrrow | date:'HH:mm dd/MM/yyyy' }}</p>
+    </div>
+
+    <div class="form-field">
+      <label><i class="fa-solid fa-hourglass-half"></i> Số tiết</label>
+      <p>{{ endtimebrrow }}</p>
+    </div>
+
+    <div class="form-field">
+      <label><i class="fa-solid fa-clipboard"></i> Mục đích sử dụng</label>
+      <textarea rows="3" [(ngModel)]="borrowPurpose" placeholder="Nhập mục đích..." required></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-success" (click)="borrowDevice()">
+        Xác nhận mượn
+      </button>
+      <button class="btn-secondary" (click)="closeBorrowForm()">
+        Hủy
+      </button>
+    </div>
+  </div>
+</div>

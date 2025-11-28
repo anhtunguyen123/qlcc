@@ -1,0 +1,180 @@
+<div class="borrows-container">
+  <div class="header-section">
+    <h1 class="page-title">
+      <i class="fa-solid fa-list-check"></i> Danh Sách Mượn Thiết Bị
+    </h1>
+    <p class="page-subtitle">Quản lý lịch sử và trạng thái mượn thiết bị</p>
+  </div>
+
+  <div class="stats-cards">
+    <div class="stat-card stat-total">
+      <div class="stat-icon">
+        <i class="fa-solid fa-list"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ totalBorrows }}</h3>
+        <p>Tổng số lượt mượn</p>
+      </div>
+    </div>
+    
+    <div class="stat-card stat-borrowed">
+      <div class="stat-icon">
+        <i class="fa-solid fa-play-circle"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ borrowedCount }}</h3>
+        <p>Đang mượn</p>
+      </div>
+    </div>
+    
+    <div class="stat-card stat-returned">
+      <div class="stat-icon">
+        <i class="fa-solid fa-check-circle"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ returnedCount }}</h3>
+        <p>Đã trả</p>
+      </div>
+    </div>
+    
+    <div class="stat-card stat-overdue">
+      <div class="stat-icon">
+        <i class="fa-solid fa-exclamation-triangle"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ overdueCount }}</h3>
+        <p>Quá hạn</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-section">
+    <div class="filter-group">
+      <label for="statusFilter">Lọc theo trạng thái:</label>
+      <select id="statusFilter" class="filter-select" [(ngModel)]="filter.status">
+        <option value="">Tất cả</option>
+        <option value="BORROWED">Đang mượn</option>
+        <option value="RETURNED">Đã trả</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="dateFilter">Lọc theo ngày:</label>
+      <input type="date" id="dateFilter" class="filter-input" [(ngModel)]="filter.borrowDate">
+    </div>
+    <button class="btn-reset-filters" >
+      <i class="fas fa-refresh"></i> Đặt lại
+    </button>
+  </div>
+
+  <div class="table-wrapper" *ngIf="ListBorrow.length > 0">
+    <div class="table-responsive">
+      <table class="borrow-table">
+        <thead>
+          <tr>
+            <th class="text-center">STT</th>
+            <th>Thiết bị</th>
+            <th>Người mượn</th>
+            <th class="text-center">Thời gian mượn</th>
+            <th class="text-center">Thời gian trả thực tế</th>
+            <th class="text-center">Hạn trả</th>
+            <th>Mục đích</th>
+            <th class="text-center">Trạng thái</th>
+            <th class="text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let borrow of ListBorrow; let i = index" [class]="getRowClass(borrow)">
+            <td class="text-center">{{ i + 1 }}</td>
+            
+            <td class="device-cell">
+              <div class="device-info">
+                <div class="device-name">{{ borrow.device?.deviceName }}</div>
+              </div>
+            </td>
+            
+            <!-- User Information -->
+            <td class="user-cell">
+              <div class="user-info">
+                <div class="user-name">{{ borrow.user?.fullName }}</div>
+              </div>
+            </td>
+            
+            <td class="text-center time-cell">
+              <div class="time-group">
+                <div class="time-label">Bắt đầu:</div>
+                <div class="time-value">{{ borrow.actualStartTime | date:'dd/MM/yyyy HH:mm' }}</div>
+              </div>
+              <div class="time-group" *ngIf="borrow.actualEndTime">
+                <div class="time-label">Kết thúc:</div>
+                <div class="time-value">{{ borrow.actualEndTime | date:'dd/MM/yyyy HH:mm' }}</div>
+              </div>
+            </td>
+            
+            <td class="text-center">
+              <div *ngIf="borrow.actualEndTime; else notReturned">
+                {{ borrow.actualEndTime | date:'dd/MM/yyyy HH:mm' }}
+              </div>
+              <ng-template #notReturned>
+                <span class="text-muted">Chưa trả</span>
+              </ng-template>
+            </td>
+            
+            <td class="text-center">
+              {{ borrow.returnDue | date:'dd/MM/yyyy HH:mm' }}
+              <div *ngIf="isOverdue(borrow)" class="overdue-badge">
+                Quá hạn
+              </div>
+            </td>
+            
+            <td class="purpose-cell">
+              <span class="purpose-text" [title]="borrow.purpose">{{ borrow.purpose }}</span>
+              <div *ngIf="borrow.notes" class="notes-text" [title]="borrow.notes">
+                <i class="fa-solid fa-note"></i> {{ borrow.notes }}
+              </div>
+            </td>
+            
+            <td class="text-center">
+              <span class="status-badge status-{{ borrow.status?.toLowerCase() }}">
+                <i *ngIf="borrow.status === 'BORROWED'" class="fa-solid fa-play-circle"></i>
+                <i *ngIf="borrow.status === 'RETURNED'" class="fa-solid fa-check-circle"></i>
+                <i *ngIf="borrow.status === 'OVERDUE'" class="fa-solid fa-exclamation-triangle"></i>
+                {{borrow.status}}
+              </span>
+              <div *ngIf="borrow.extensionCount > 0" class="extension-count">
+                Đã gia hạn: {{ borrow.extensionCount }} lần
+              </div>
+            </td>
+
+            <td class="text-center action-cell">
+              <div class="action-buttons">
+                
+                <button *ngIf="borrow.status === 'BORROWED'" class="btn-action btn-return" title="Ghi nhận trả">
+                  <!-- (click)="markAsReturned(borrow.borrowId)" -->
+                  <i class="fas fa-rotate-left"></i>
+                </button>
+
+                <button *ngIf="borrow.status === 'BORROWED'" class="btn-action btn-extend" title="Gia hạn">
+                  <!-- (click)="extendBorrow(borrow)" -->
+                  <i class="fas fa-clock"></i>
+                </button>
+                
+                <button class="btn-action btn-notes" title="Thêm ghi chú">
+                  <!-- (click)="addNotes(borrow)" -->
+                  <i class="fas fa-edit"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="ListBorrow.length === 0">
+    <div class="empty-icon">
+      <i class="fa-solid fa-inbox"></i>
+    </div>
+    <h3>Không có dữ liệu</h3>
+    <p>Hiện tại không có bản ghi mượn thiết bị nào phù hợp với bộ lọc.</p>
+  </div>
+</div>

@@ -1,0 +1,81 @@
+<header class="header">
+  <div class="header-left">
+    <i class="fas fa-laptop-code logo-icon"></i>
+    <span class="app-title">Smart Device Management</span>
+  </div>
+
+  <div class="header-right">
+    <div class="user-info" (click)="toggleUserMenu()">
+      <div class="avatar">QA</div>
+      <div class="details">
+        <span class="name">{{ fullname }}</span>
+        <span class="role">{{ role }}</span>
+      </div>
+      <i class="fas fa-chevron-down" [class.rotate]="isUserMenuOpen"></i>
+    </div>
+
+    <div class="notification-wrapper" (click)="toggleNotificationPanel()">
+      <i class="fas fa-bell"></i>
+      <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+    </div>
+
+    <div class="notification-panel" [class.active]="isNotificationOpen">
+      <div class="notification-header">
+        <h3>Thông báo</h3>
+        <button class="close-btn" (click)="toggleNotificationPanel()">&times;</button>
+      </div>
+      <div class="notification-list">
+        <div *ngFor="let n of notifications" class="notification-item" [class.unread]="!n.isRead"
+          [class.read]="n.isRead" (click)="openNotification(n)">
+
+          <div class="notification-content">
+            <strong>{{ n.title }}</strong>
+            <p>{{ n.message }}</p>
+            <small>{{ n.createdAt | date:'short' }}</small>
+          </div>
+          <button *ngIf="!n.isRead" class="mark-read-btn" (click)="openNotification(n); $event.stopPropagation()">
+            <i class="fas fa-check"></i>
+          </button>
+        </div>
+        <div *ngIf="notifications.length === 0" class="empty">Không có thông báo</div>
+      </div>
+    </div>
+
+    <div class="user-menu" [class.active]="isUserMenuOpen">
+      <a href="#" class="menu-item" (click)="openProfile($event)">
+        <i class="fas fa-user"></i>
+        <span>Hồ sơ cá nhân</span>
+      </a>
+      <a href="#" class="menu-item">
+        <i class="fas fa-cog"></i>
+        <span>Cài đặt</span>
+      </a>
+      <div class="menu-divider"></div>
+      <ng-container *ngIf="isLoggedIn; else loginLink">
+        <a class="menu-item logout" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Đăng xuất</span>
+        </a>
+      </ng-container>
+      <ng-template #loginLink>
+        <a class="menu-item" (click)="login()">
+          <i class="fas fa-sign-in-alt"></i>
+          <span>Đăng nhập</span>
+        </a>
+      </ng-template>
+    </div>
+  </div>
+
+  <div class="profile-overlay" *ngIf="isProfileOpen" (click)="closeProfile()"></div>
+  <div class="profile-panel" [class.open]="isProfileOpen">
+    <div class="profile-header">
+      <h3>Thông tin cá nhân</h3>
+      <button class="close-btn" (click)="closeProfile()">&times;</button>
+    </div>
+    <div class="profile-body">
+      <p><strong>Họ tên:</strong> {{ fullname }}</p>
+      <p><strong>Vai trò:</strong> {{ role }}</p>
+      <p><strong>Email:</strong>{{Email}}</p>
+    </div>
+  </div>
+</header>

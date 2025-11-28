@@ -1,0 +1,50 @@
+
+<div class="sidebar-container">
+
+  <aside class="sidebar" [class.collapsed]="isSidebarCollapsed" [class.open]="isSidebarOpen">
+
+    <button class="sidebar-toggle-arrow" (click)="toggleSidebar()" *ngIf="!isMobile">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+    
+    <div class="menu-section">
+      <a routerLink="/borrow" routerLinkActive="active" *ngIf="isTeacher()" class="menu-item" (click)="closeMobileSidebar()">
+        <i class="fas fa-hand-holding"></i>
+        <span>Yêu cầu mượn</span>
+      </a>
+      <a routerLink="/reservation" routerLinkActive="active" *ngIf="isTeacher()" class="menu-item" (click)="closeMobileSidebar()">
+        <i class="fas fa-toolbox"></i>
+        <span>Thiết bị của tôi</span>
+      </a>
+      <a routerLink="/return-device" routerLinkActive="active" *ngIf="isTeacher()" class="menu-item" (click)="closeMobileSidebar()">
+        <i class="fas fa-undo"></i>
+        <span>Trả thiết bị</span>
+      </a>
+    </div>
+
+    <div class="menu-section">
+      <a routerLink="/dashboard" routerLinkActive="active" *ngIf="isAdmin()" class="menu-item" (click)="closeMobileSidebar()">
+        <i class="fas fa-calendar-check"></i>
+        <span>DashBoard</span>
+      </a>
+      <a routerLink="/management-device" routerLinkActive="active" *ngIf="isAdmin()" class="menu-item" (click)="closeMobileSidebar()">
+        <i class="fas fa-laptop"></i>
+        <span>Quản lý thiết bị</span>
+      </a>
+      <a routerLink="/manage-reservation" routerLinkActive="active" *ngIf="isAdmin()" class="menu-item" (click)="closeMobileSidebar()">
+        <i class="fas fa-calendar-check"></i>
+        <span>Quản lý yêu cầu mượn</span>
+      </a>
+      <a routerLink="/manage-borrow" routerLinkActive="active" class="menu-item" *ngIf="isAdmin()"  (click)="closeMobileSidebar()">
+        <i class="fas fa-handshake"></i>
+        <span>Quản lý Danh sách mượn</span>
+      </a>
+    </div>
+  </aside>
+
+  <button class="mobile-toggle" (click)="toggleMobileSidebar()" *ngIf="isMobile">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div class="sidebar-overlay" *ngIf="isSidebarOpen && isMobile" (click)="closeMobileSidebar()"></div>
+</div>
